@@ -1,35 +1,47 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Fetch data and display on page load
-    fetchDataAndDisplay();
-
-    // Fetch data every 5 seconds (adjust as needed)
-    setInterval(fetchDataAndDisplay, 5000);
+`document.addEventListener('DOMContentLoaded', function () {
+    // Load the Google Sheets API
+    gapi.load('client', initClient);
 });
 
-function fetchDataAndDisplay() {
-    fetch('excel.xlsx')
-        .then(response => response.arrayBuffer())
-        .then(data => {
-            const workbook = XLSX.read(new Uint8Array(data), { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+function initClient() {
+    // Initialize the Google Sheets API client
+    gapi.client.init({
+        apiKey: 'AIzaSyCkGy5M-SB1CWT3xbAlUuTthgWKLn2jPfs', // Replace with your API key
+    }).then(function () {
+        // Fetch data and display on page load
+        fetchDataAndDisplay();
 
-            // Filter data for specific columns
-            const filteredData = filterData(jsonData);
-
-            // Display filtered data
-            displayData(filteredData);
-        })
-        .catch(error => console.error('Error fetching data:', error));
+        // Fetch data every 5 seconds (adjust as needed)
+        setInterval(fetchDataAndDisplay, 5000);
+    }).catch(function (error) {
+        console.error('Error initializing Google Sheets API client:', error);
+    });
 }
 
+function fetchDataAndDisplay() {
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: '1t6KEmxqt6DIpJuSdwMM-FmjiM4Y5UdTo1sRxfAlmdLk',
+        range: 'Sheet1', // Adjust sheet name as needed
+    }).then(function(response) {
+        const jsonData = response.result.values;
+
+        // Filter data for specific columns
+        const filteredData = filterData(jsonData);
+
+        // Display filtered data
+        displayData(filteredData);
+    }).catch(function(error) {
+        console.error('Error fetching data:', error);
+    });
+}
+
+// Replace this function with the one that fits your Google Sheets API response format
 function filterData(data) {
-    // Index of columns to display
-    const columnsToDisplay = ["MOTU PATLU", "SHIN-CHAN", "CHHOTA BHEEM", "TOM & JERRY"];
+    // Assuming the first row contains column names
+    const columnsToDisplay = ["Motu Patlu", "Shin-Chan", "Chhota Bheem", "Tom & Jerry"];
 
     // Find indices of columns to display
-    const headerRow = data[0].map(cell => cell.toString().trim());
+    const headerRow = data[0];
     const columnIndices = columnsToDisplay.map(column => headerRow.indexOf(column));
 
     // Filter data based on column indices
@@ -66,3 +78,4 @@ function displayData(data) {
 
     container.appendChild(table);
 }
+`
