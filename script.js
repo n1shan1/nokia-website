@@ -1,4 +1,4 @@
-`document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     // Load the Google Sheets API
     gapi.load('client', initClient);
 });
@@ -78,4 +78,3 @@ function displayData(data) {
 
     container.appendChild(table);
 }
-`
