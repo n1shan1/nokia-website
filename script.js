@@ -1,26 +1,49 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Load the Google Sheets API
-    gapi.load('client', initClient);
-});
+// Client ID and API key from the Developer Console
+const CLIENT_ID = '956573485064-mp6svn15vc107k71dg4ba8taqj579gs0.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyCkGy5M-SB1CWT3xbAlUuTthgWKLn2jPfs';
 
+// Array of API discovery doc URLs for different APIs
+const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+
+// Authorization scopes required by the API
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+
+// Function to initialize the Google Sheets API client
+function handleClientLoad() {
+    gapi.load('client:auth2', initClient);
+}
+
+// Function to initialize the Google Sheets API client
 function initClient() {
-    // Initialize the Google Sheets API client
     gapi.client.init({
-        apiKey: 'AIzaSyCkGy5M-SB1CWT3xbAlUuTthgWKLn2jPfs', // Replace with your API key
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOCS,
+        scope: SCOPES
     }).then(function () {
-        // Fetch data and display on page load
-        fetchDataAndDisplay();
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
-        // Fetch data every 5 seconds (adjust as needed)
-        setInterval(fetchDataAndDisplay, 5000);
+        // Handle the initial sign-in state.
+        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+
     }).catch(function (error) {
         console.error('Error initializing Google Sheets API client:', error);
     });
 }
 
+// Function to update the sign-in status
+function updateSigninStatus(isSignedIn) {
+    if (isSignedIn) {
+        fetchDataAndDisplay();
+        setInterval(fetchDataAndDisplay, 5000);
+    }
+}
+
+// Function to fetch data from Google Sheets API and display on the page
 function fetchDataAndDisplay() {
     gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: '1t6KEmxqt6DIpJuSdwMM-FmjiM4Y5UdTo1sRxfAlmdLk',
+        spreadsheetId: 'YOUR_SPREADSHEET_ID',
         range: 'Sheet1', // Adjust sheet name as needed
     }).then(function(response) {
         const jsonData = response.result.values;
@@ -50,6 +73,7 @@ function filterData(data) {
     return filteredData;
 }
 
+// Function to display data on the page
 function displayData(data) {
     const container = document.getElementById('data-container');
     container.innerHTML = '';
@@ -63,6 +87,7 @@ function displayData(data) {
         th.textContent = header;
         headerRow.appendChild(th);
     }
+
     table.appendChild(headerRow);
 
     // Create table rows
@@ -73,6 +98,7 @@ function displayData(data) {
             td.textContent = cell;
             row.appendChild(td);
         }
+
         table.appendChild(row);
     }
 
